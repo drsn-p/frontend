@@ -12,7 +12,7 @@ const App = () => {
     const fetchWalletData = async () => {
       try {
         // Mock wallet public key for demonstration
-        const mockPublicKey = '3ZtJjSHgiwFg6G7gtet....';
+        const mockPublicKey = '6pEy5R6o1CotQvudNTxTNReUaeZF1cGmfCgpGT6B91UY';
         setWallet({ publicKey: mockPublicKey });
 
         // Fetch balance

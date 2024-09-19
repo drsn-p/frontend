@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import QRCode from 'qrcode.react'; // Ensure you have this package installed
 import './App.css';
 
 const App = () => {
   const [balance, setBalance] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [solPrice, setSolPrice] = useState(null);
+  const [recipient, setRecipient] = useState(''); // State for recipient address
+  const [amount, setAmount] = useState(''); // State for amount
+  const [qrData, setQrData] = useState(null); // State for QR code data
 
   useEffect(() => {
-    // Fetch wallet and balance
     const fetchWalletData = async () => {
       try {
         // Mock wallet public key for demonstration
@@ -32,20 +35,33 @@ const App = () => {
   }, []);
 
   const sendSol = async () => {
-    // Logic to send SOL
-    const amount = prompt('Enter amount of SOL to send:');
-    if (amount && wallet) {
-      try {
-        const response = await axios.post('/api/send-sol', {
-          from: wallet.publicKey,
-          to: 'recipient-public-key', // Replace with actual recipient's public key
-          amount,
-        });
-        alert(`Transaction successful! Signature: ${response.data.signature}`);
-      } catch (error) {
-        console.error('Error sending SOL:', error);
-        alert('Error sending SOL. Please check the console for details.');
-      }
+    if (!wallet) {
+      alert('Wallet is not available');
+      return;
+    }
+    if (!recipient || !amount) {
+      alert('Please enter both recipient address and amount');
+      return;
+    }
+    try {
+      const response = await axios.post('/api/send-sol', {
+        from: wallet.publicKey,
+        to: recipient,
+        amount: parseFloat(amount),
+      });
+      alert(`Transaction successful! Signature: ${response.data.signature}`);
+    } catch (error) {
+      console.error('Error sending SOL:', error);
+      alert('Error sending SOL. Please check the console for details.');
+    }
+  };
+
+  const generateQrCode = () => {
+    if (wallet) {
+      const qrData = `solana:${wallet.publicKey}`;
+      setQrData(qrData);
+    } else {
+      alert('Wallet is not available');
     }
   };
 
@@ -57,8 +73,23 @@ const App = () => {
         <h3>Balance: {balance !== null ? `${balance} SOL` : 'Loading...'}</h3>
         <h3>SOL Price: {solPrice !== null ? `$${solPrice}` : 'Loading...'}</h3>
       </div>
-      <button onClick={sendSol} className="btn-send">Send SOL</button>
-      <button onClick={() => alert('Generate QR Code logic goes here')} className="btn-generate-qr">Generate QR Code</button>
+      <div className="form-group">
+        <input
+          type="text"
+          placeholder="Recipient Address"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <button onClick={sendSol} className="btn-send">Send SOL</button>
+      </div>
+      <button onClick={generateQrCode} className="btn-generate-qr">Generate QR Code</button>
+      {qrData && <QRCode value={qrData} />}
     </div>
   );
 };

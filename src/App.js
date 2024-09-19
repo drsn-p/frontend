@@ -8,19 +8,24 @@ const App = () => {
   const [solPrice, setSolPrice] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching wallet and balance
+    // Fetch wallet and balance
     const fetchWalletData = async () => {
-      // Mock wallet public key for demonstration
-      const mockPublicKey = '3ZtJjSHgiwFg6G7gtet....';
-      setWallet({ publicKey: mockPublicKey });
+      try {
+        // Mock wallet public key for demonstration
+        const mockPublicKey = '3ZtJjSHgiwFg6G7gtet....';
+        setWallet({ publicKey: mockPublicKey });
 
-      // Fetch balance
-      const { data: balance } = await axios.get(`/api/balance?publicKey=${mockPublicKey}`);
-      setBalance(balance);
+        // Fetch balance
+        const balanceResponse = await axios.get(`/api/balance?publicKey=${mockPublicKey}`);
+        setBalance(balanceResponse.data);
 
-      // Fetch SOL price
-      const { data } = await axios.get('/api/sol-price');
-      setSolPrice(data.price);
+        // Fetch SOL price
+        const priceResponse = await axios.get('/api/sol-price');
+        setSolPrice(priceResponse.data.price);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        alert('Failed to fetch data. Check the console for details.');
+      }
     };
 
     fetchWalletData();
@@ -38,7 +43,8 @@ const App = () => {
         });
         alert(`Transaction successful! Signature: ${response.data.signature}`);
       } catch (error) {
-        alert('Error sending SOL. Please try again.');
+        console.error('Error sending SOL:', error);
+        alert('Error sending SOL. Please check the console for details.');
       }
     }
   };
